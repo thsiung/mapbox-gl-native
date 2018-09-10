@@ -1,3 +1,4 @@
+#include <mbgl/style/conversion_impl.hpp>
 #include <mbgl/style/expression/format_expression.hpp>
 #include <mbgl/style/expression/literal.hpp>
 #include <mbgl/util/string.hpp>

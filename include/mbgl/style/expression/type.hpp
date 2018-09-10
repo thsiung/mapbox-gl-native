@@ -68,7 +68,7 @@ struct CollatorType {
 };
     
 struct FormattedType {
-    constexpr FormattedType() {};
+    constexpr FormattedType() {}; // NOLINT
     std::string getName() const { return "formatted"; }
     bool operator==(const FormattedType&) const { return true; }
 };
