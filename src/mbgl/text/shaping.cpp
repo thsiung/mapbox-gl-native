@@ -322,7 +322,7 @@ void shapeLines(Shaping& shaping,
     shaping.right = shaping.left + maxLineLength;
 }
 
-const Shaping getShaping(const std::u16string& logicalInput,
+const Shaping getShaping(const TaggedString& formattedString,
                          const float maxWidth,
                          const float lineHeight,
                          const style::SymbolAnchorType textAnchor,
@@ -333,6 +333,7 @@ const Shaping getShaping(const std::u16string& logicalInput,
                          const WritingModeType writingMode,
                          BiDi& bidi,
                          const Glyphs& glyphs) {
+    const std::u16string& logicalInput = formattedString.text;
     Shaping shaping(translate.x, translate.y, writingMode);
     
     std::vector<std::u16string> reorderedLines =

@@ -1,6 +1,7 @@
 #include <mbgl/style/conversion_impl.hpp>
 #include <mbgl/style/expression/format_expression.hpp>
 #include <mbgl/style/expression/literal.hpp>
+#include <mbgl/util/font_stack.hpp>
 #include <mbgl/util/string.hpp>
 
 namespace mbgl {
@@ -146,13 +147,18 @@ EvaluationResult FormatExpression::evaluate(const EvaluationContext& params) con
             evaluatedFontScale = fontScaleResult->get<double>();
         }
 
-        optional<std::string> evaluatedTextFont;
+        optional<FontStack> evaluatedTextFont;
         if (section.textFont) {
             auto textFontResult = (*section.textFont)->evaluate(params);
             if (!textFontResult) {
                 return textFontResult.error();
             }
-            evaluatedTextFont = textFontResult->get<std::string>();
+            FontStack fontStack;
+            for (const auto& value : textFontResult->get<mapbox::util::recursive_wrapper<std::vector<Value>>>().get()) {
+                // TODO: This can't be the canonical way to do this?
+                fontStack.push_back(value.get<std::string>());
+            }
+            evaluatedTextFont = fontStack;
         }
         evaluatedSections.emplace_back(textResult->get<std::string>(), evaluatedFontScale, evaluatedTextFont);
     }

@@ -44,8 +44,19 @@ public:
     float right() const { return _right; }
     float angle() const { return _angle; }
 };
+    
+struct SectionOptions {
+    optional<double> scale;
+    optional<std::size_t> fontStackHash;
+};
+    
+struct TaggedString {
+    std::u16string text;
+    std::vector<uint8_t> sectionIndex;
+    std::vector<SectionOptions> sections;
+};
 
-const Shaping getShaping(const std::u16string& string,
+const Shaping getShaping(const TaggedString& string,
                          float maxWidth,
                          float lineHeight,
                          style::SymbolAnchorType textAnchor,

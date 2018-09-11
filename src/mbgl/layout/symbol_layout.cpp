@@ -108,25 +108,35 @@ SymbolLayout::SymbolLayout(const BucketParameters& parameters,
         ft.index = i;
 
         if (hasText) {
-            std::string u8string = layout.evaluate<TextField>(zoom, ft);
-
+            auto formatted = layout.evaluate<TextField>(zoom, ft);
             auto textTransform = layout.evaluate<TextTransform>(zoom, ft);
-            if (textTransform == TextTransformType::Uppercase) {
-                u8string = platform::uppercase(u8string);
-            } else if (textTransform == TextTransformType::Lowercase) {
-                u8string = platform::lowercase(u8string);
+            ft.formattedText = TaggedString();
+            for (const auto& section : formatted.sections) {
+                std::string u8string = section.text;
+                if (textTransform == TextTransformType::Uppercase) {
+                    u8string = platform::uppercase(u8string);
+                } else if (textTransform == TextTransformType::Lowercase) {
+                    u8string = platform::lowercase(u8string);
+                }
+                
+                ft.formattedText->text += applyArabicShaping(util::utf8_to_utf16::convert(u8string));
+                SectionOptions options;
+                options.scale = section.fontScale;
+                if (section.fontStack) {
+                    options.fontStackHash = FontStackHash()(*section.fontStack);
+                }
             }
 
-            ft.text = applyArabicShaping(util::utf8_to_utf16::convert(u8string));
+
             const bool canVerticalizeText = layout.get<TextRotationAlignment>() == AlignmentType::Map
                                          && layout.get<SymbolPlacement>() != SymbolPlacementType::Point
-                                         && util::i18n::allowsVerticalWritingMode(*ft.text);
+                                         && util::i18n::allowsVerticalWritingMode(ft.formattedText->text);
 
             FontStack fontStack = layout.evaluate<TextFont>(zoom, ft);
             GlyphIDs& dependencies = glyphDependencies[fontStack];
 
             // Loop through all characters of this text and collect unique codepoints.
-            for (char16_t chr : *ft.text) {
+            for (char16_t chr : ft.formattedText->text) {
                 dependencies.insert(chr);
                 if (canVerticalizeText) {
                     if (char16_t verticalChr = util::i18n::verticalizePunctuation(chr)) {
@@ -141,7 +151,7 @@ SymbolLayout::SymbolLayout(const BucketParameters& parameters,
             imageDependencies.emplace(*ft.icon, ImageType::Icon);
         }
 
-        if (ft.text || ft.icon) {
+        if (ft.formattedText || ft.icon) {
             features.push_back(std::move(ft));
         }
     }
@@ -182,17 +192,17 @@ void SymbolLayout::prepareSymbols(const GlyphMap& glyphMap, const GlyphPositions
         optional<PositionedIcon> shapedIcon;
 
         // if feature has text, shape the text
-        if (feature.text) {
-            auto applyShaping = [&] (const std::u16string& text, WritingModeType writingMode) {
+        if (feature.formattedText) {
+            auto applyShaping = [&] (const TaggedString& formattedText, WritingModeType writingMode) {
                 const float oneEm = 24.0f;
                 const Shaping result = getShaping(
-                    /* string */ text,
+                    /* string */ formattedText,
                     /* maxWidth: ems */ layout.get<SymbolPlacement>() == SymbolPlacementType::Point ?
                         layout.evaluate<TextMaxWidth>(zoom, feature) * oneEm : 0,
                     /* lineHeight: ems */ layout.get<TextLineHeight>() * oneEm,
                     /* anchor */ layout.evaluate<TextAnchor>(zoom, feature),
                     /* justify */ layout.evaluate<TextJustify>(zoom, feature),
-                    /* spacing: ems */ util::i18n::allowsLetterSpacing(*feature.text) ? layout.evaluate<TextLetterSpacing>(zoom, feature) * oneEm : 0.0f,
+                    /* spacing: ems */ util::i18n::allowsLetterSpacing(feature.formattedText->text) ? layout.evaluate<TextLetterSpacing>(zoom, feature) * oneEm : 0.0f,
                     /* translate */ Point<float>(layout.evaluate<TextOffset>(zoom, feature)[0] * oneEm, layout.evaluate<TextOffset>(zoom, feature)[1] * oneEm),
                     /* verticalHeight */ oneEm,
                     /* writingMode */ writingMode,
@@ -202,10 +212,11 @@ void SymbolLayout::prepareSymbols(const GlyphMap& glyphMap, const GlyphPositions
                 return result;
             };
 
-            shapedTextOrientations.first = applyShaping(*feature.text, WritingModeType::Horizontal);
+            shapedTextOrientations.first = applyShaping(*feature.formattedText, WritingModeType::Horizontal);
 
-            if (util::i18n::allowsVerticalWritingMode(*feature.text) && textAlongLine) {
-                shapedTextOrientations.second = applyShaping(util::i18n::verticalizePunctuation(*feature.text), WritingModeType::Vertical);
+            if (util::i18n::allowsVerticalWritingMode(feature.formattedText->text) && textAlongLine) {
+                feature.formattedText->text = util::i18n::verticalizePunctuation(feature.formattedText->text);
+                shapedTextOrientations.second = applyShaping(*feature.formattedText, WritingModeType::Vertical);
             }
         }
 
@@ -287,7 +298,7 @@ void SymbolLayout::addFeature(const std::size_t layoutFeatureIndex,
                     layout.evaluate(zoom, feature), layoutTextSize,
                     textBoxScale, textPadding, textPlacement, textOffset,
                     iconBoxScale, iconPadding, iconOffset,
-                    glyphPositionMap, indexedFeature, layoutFeatureIndex, feature.index, feature.text.value_or(std::u16string()), overscaling);
+                                         glyphPositionMap, indexedFeature, layoutFeatureIndex, feature.index, feature.formattedText ? feature.formattedText->text : std::u16string(), overscaling);
         }
     };
     
@@ -308,7 +319,7 @@ void SymbolLayout::addFeature(const std::size_t layoutFeatureIndex,
                                          overscaling);
 
             for (auto& anchor : anchors) {
-                if (!feature.text || !anchorIsTooClose(*feature.text, textRepeatDistance, anchor)) {
+                if (!feature.formattedText || !anchorIsTooClose(feature.formattedText->text, textRepeatDistance, anchor)) {
                     addSymbolInstance(line, anchor);
                 }
             }

@@ -7,6 +7,7 @@
 #include <mbgl/style/expression/match.hpp>
 #include <mbgl/style/expression/case.hpp>
 #include <mbgl/style/expression/array_assertion.hpp>
+#include <mbgl/style/expression/format_expression.hpp>
 #include <mbgl/util/string.hpp>
 
 #include <cassert>
@@ -36,6 +37,13 @@ bool hasTokens(const std::string& source) {
     }
 
     return false;
+}
+    
+std::unique_ptr<Expression> convertTokenStringToFormatExpression(const std::string& source) {
+    auto textExpression = convertTokenStringToExpression(source);
+    std::vector<FormatExpressionSection> sections;
+    sections.emplace_back(std::move(textExpression), nullopt, nullopt);
+    return std::make_unique<FormatExpression>(sections);
 }
 
 std::unique_ptr<Expression> convertTokenStringToExpression(const std::string& source) {
@@ -139,6 +147,9 @@ template optional<PropertyExpression<TextTransformType>>
     convertFunctionToExpression<TextTransformType>(const Convertible&, Error&, bool);
 template optional<PropertyExpression<TranslateAnchorType>>
     convertFunctionToExpression<TranslateAnchorType>(const Convertible&, Error&, bool);
+    
+template optional<PropertyExpression<Formatted>>
+    convertFunctionToExpression<Formatted>(const Convertible&, Error&, bool);
 
 // Ad-hoc Converters for double and int64_t. We should replace float with double wholesale,
 // and promote the int64_t Converter to general use (and it should check that the input is
@@ -283,8 +294,11 @@ static optional<std::unique_ptr<Expression>> convertLiteral(type::Type type, con
             return nullopt;
         },
         [&] (const type::FormattedType&) -> optional<std::unique_ptr<Expression>> {
-            assert(false); // No properties use this type.
-            return nullopt;
+            auto result = convert<Formatted>(value, error);
+            if (!result) {
+                return nullopt;
+            }
+            return literal(result->sections[0].text);
         }
     );
 }

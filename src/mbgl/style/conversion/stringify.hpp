@@ -2,6 +2,7 @@
 
 #include <mbgl/style/filter.hpp>
 #include <mbgl/style/property_value.hpp>
+#include <mbgl/style/expression/formatted.hpp>
 #include <mbgl/util/enum.hpp>
 #include <mbgl/util/color.hpp>
 #include <mbgl/util/feature.hpp>
@@ -44,6 +45,12 @@ void stringify(Writer& writer, double v) {
 template <class Writer>
 void stringify(Writer& writer, const std::string& v) {
     writer.String(v);
+}
+    
+template <class Writer>
+void stringify(Writer& writer, const expression::Formatted& v) {
+    // TODO: What should this be?
+    writer.String(v.sections[0].text);
 }
 
 template <class Writer, class T, class Enable = std::enable_if_t<std::is_enum<T>::value>>

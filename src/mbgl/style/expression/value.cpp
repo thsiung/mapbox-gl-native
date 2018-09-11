@@ -263,6 +263,7 @@ template <> type::Type valueTypeToExpressionType<double>() { return type::Number
 template <> type::Type valueTypeToExpressionType<std::string>() { return type::String; }
 template <> type::Type valueTypeToExpressionType<Color>() { return type::Color; }
 template <> type::Type valueTypeToExpressionType<Collator>() { return type::Collator; }
+template <> type::Type valueTypeToExpressionType<Formatted>() { return type::Formatted; }
 template <> type::Type valueTypeToExpressionType<std::unordered_map<std::string, Value>>() { return type::Object; }
 template <> type::Type valueTypeToExpressionType<std::vector<Value>>() { return type::Array(type::Value); }
 
