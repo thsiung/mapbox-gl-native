@@ -248,7 +248,7 @@ std::set<std::size_t> determineLineBreaks(const std::u16string& logicalInput,
 }
 
 void shapeLines(Shaping& shaping,
-                          const std::vector<std::u16string>& lines,
+                          const std::vector<TaggedString>& lines,
                           const float spacing,
                           const float lineHeight,
                           const style::SymbolAnchorType textAnchor,
@@ -269,7 +269,7 @@ void shapeLines(Shaping& shaping,
         textJustify == style::TextJustifyType::Left ? 0 :
         0.5;
     
-    for (std::u16string line : lines) {
+    for (const TaggedString& line : lines) {
         // Collapse whitespace so it doesn't throw off justification
         boost::algorithm::trim_if(line, boost::algorithm::is_any_of(u" \t\n\v\f\r"));
         
@@ -336,9 +336,16 @@ const Shaping getShaping(const TaggedString& formattedString,
     const std::u16string& logicalInput = formattedString.text;
     Shaping shaping(translate.x, translate.y, writingMode);
     
-    std::vector<std::u16string> reorderedLines =
-    bidi.processText(logicalInput,
-                     determineLineBreaks(logicalInput, spacing, maxWidth, writingMode, glyphs));
+    std::vector<TaggedString> reorderedLines;
+    if (formattedString.sections.size() == 1) {
+        auto untaggedLines = bidi.processText(logicalInput,
+                                              determineLineBreaks(logicalInput, spacing, maxWidth, writingMode, glyphs));
+        for (const auto& line : untaggedLines) {
+            reorderedLines.emplace_back(line, formattedString.sections[0]);
+        }
+    } else {
+        
+    }
     
     shapeLines(shaping, reorderedLines, spacing, lineHeight, textAnchor,
                textJustify, verticalHeight, writingMode, glyphs);

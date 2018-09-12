@@ -94,7 +94,7 @@ SymbolQuad getIconQuad(const PositionedIcon& shapedIcon,
 SymbolQuads getGlyphQuads(const Shaping& shapedText,
                           const SymbolLayoutProperties::Evaluated& layout,
                           const style::SymbolPlacementType placement,
-                          const GlyphPositionMap& positions) {
+                          const GlyphPositions& positions) {
     const float textRotate = layout.get<TextRotate>() * util::DEG2RAD;
 
     const float oneEm = 24.0;

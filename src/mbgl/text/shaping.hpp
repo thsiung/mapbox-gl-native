@@ -47,10 +47,18 @@ public:
     
 struct SectionOptions {
     optional<double> scale;
-    optional<std::size_t> fontStackHash;
+    optional<FontStackHash> fontStackHash;
 };
     
 struct TaggedString {
+    TaggedString() {}
+    
+    TaggedString(std::u16string text_, SectionOptions options)
+    : text(std::move(text_))
+    , sectionIndex(text.size(), 0) {
+        sections.push_back(std::move(options));
+    }
+    
     std::u16string text;
     std::vector<uint8_t> sectionIndex;
     std::vector<SectionOptions> sections;
@@ -66,6 +74,6 @@ const Shaping getShaping(const TaggedString& string,
                          float verticalHeight,
                          const WritingModeType,
                          BiDi& bidi,
-                         const Glyphs& glyphs);
+                         const GlyphMap& glyphs);
 
 } // namespace mbgl

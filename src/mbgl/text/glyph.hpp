@@ -55,7 +55,7 @@ public:
 };
 
 using Glyphs = std::map<GlyphID, optional<Immutable<Glyph>>>;
-using GlyphMap = std::map<FontStack, Glyphs>;
+using GlyphMap = std::map<FontStackHash, Glyphs>;
 
 class PositionedGlyph {
 public:
@@ -66,6 +66,9 @@ public:
     float x = 0;
     float y = 0;
     bool vertical = false;
+    
+    FonstStackHash font;
+    double scale;
 };
 
 enum class WritingModeType : uint8_t;

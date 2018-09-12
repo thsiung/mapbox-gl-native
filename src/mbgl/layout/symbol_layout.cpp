@@ -123,7 +123,7 @@ SymbolLayout::SymbolLayout(const BucketParameters& parameters,
                 SectionOptions options;
                 options.scale = section.fontScale;
                 if (section.fontStack) {
-                    options.fontStackHash = FontStackHash()(*section.fontStack);
+                    options.fontStackHash = FontStackHasher()(*section.fontStack);
                 }
             }
 
@@ -180,14 +180,6 @@ void SymbolLayout::prepareSymbols(const GlyphMap& glyphMap, const GlyphPositions
 
         FontStack fontStack = layout.evaluate<TextFont>(zoom, feature);
 
-        auto glyphMapIt = glyphMap.find(fontStack);
-        const Glyphs& glyphs = glyphMapIt != glyphMap.end()
-            ? glyphMapIt->second : Glyphs();
-
-        auto glyphPositionsIt = glyphPositions.find(fontStack);
-        const GlyphPositionMap& glyphPositionMap = glyphPositionsIt != glyphPositions.end()
-            ? glyphPositionsIt->second : GlyphPositionMap();
-
         std::pair<Shaping, Shaping> shapedTextOrientations;
         optional<PositionedIcon> shapedIcon;
 
@@ -207,7 +199,7 @@ void SymbolLayout::prepareSymbols(const GlyphMap& glyphMap, const GlyphPositions
                     /* verticalHeight */ oneEm,
                     /* writingMode */ writingMode,
                     /* bidirectional algorithm object */ bidi,
-                    /* glyphs */ glyphs);
+                    /* glyphs */ glyphMap);
 
                 return result;
             };
@@ -242,7 +234,7 @@ void SymbolLayout::prepareSymbols(const GlyphMap& glyphMap, const GlyphPositions
 
         // if either shapedText or icon position is present, add the feature
         if (shapedTextOrientations.first || shapedIcon) {
-            addFeature(std::distance(features.begin(), it), feature, shapedTextOrientations, shapedIcon, glyphPositionMap);
+            addFeature(std::distance(features.begin(), it), feature, shapedTextOrientations, shapedIcon, glyphPositions);
         }
         
         feature.geometry.clear();
@@ -255,7 +247,7 @@ void SymbolLayout::addFeature(const std::size_t layoutFeatureIndex,
                               const SymbolFeature& feature,
                               const std::pair<Shaping, Shaping>& shapedTextOrientations,
                               optional<PositionedIcon> shapedIcon,
-                              const GlyphPositionMap& glyphPositionMap) {
+                              const GlyphPositions& glyphPositions) {
     const float minScale = 0.5f;
     const float glyphSize = 24.0f;
     
