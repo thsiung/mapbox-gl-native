@@ -100,6 +100,105 @@ std::vector<std::u16string> BiDi::processText(const std::u16string& input,
 
     return applyLineBreaking(lineBreakPoints);
 }
+    
+std::vector<StyledRun> BiDi::processStyledText(const StyledRun& input, std::set<std::size_t> lineBreakPoints) {
+    std::vector<StyledRun> lines;
+    const auto& inputText = input.first;
+    const auto& styleIndices = input.second;
+    
+    UErrorCode errorCode = U_ZERO_ERROR;
+    
+    ubidi_setPara(impl->bidiText, mbgl::utf16char_cast<const UChar*>(inputText.c_str()), static_cast<int32_t>(inputText.size()),
+                  UBIDI_DEFAULT_LTR, nullptr, &errorCode);
+    
+    if (U_FAILURE(errorCode)) {
+        throw std::runtime_error(std::string("BiDi::processStyledText: ") + u_errorName(errorCode));
+    }
+    
+    mergeParagraphLineBreaks(lineBreakPoints);
+    
+    std::size_t lineStartIndex = 0;
+    
+    for (std::size_t lineBreakPoint : lineBreakPoints) {
+        StyledRun line;
+        line.second.reserve(lineBreakPoint - lineStartIndex);
+
+        errorCode = U_ZERO_ERROR;
+        ubidi_setLine(impl->bidiText, static_cast<int32_t>(lineStartIndex), static_cast<int32_t>(lineBreakPoint), impl->bidiLine, &errorCode);
+        
+        if (U_FAILURE(errorCode)) {
+            throw std::runtime_error(std::string("BiDi::processStyledText (setLine): ") + u_errorName(errorCode));
+        }
+        
+        errorCode = U_ZERO_ERROR;
+        uint32_t runCount = ubidi_countRuns(impl->bidiLine, &errorCode);
+        if (U_FAILURE(errorCode)) {
+            throw std::runtime_error(std::string("BiDi::processStyledText (countRuns): ") + u_errorName(errorCode));
+        }
+        
+        for (uint32_t runIndex = 0; runIndex < runCount; runIndex++) {
+            int32_t runLogicalStart;
+            int32_t runLength;
+            UBiDiDirection direction = ubidi_getVisualRun(impl->bidiLine, runIndex, &runLogicalStart, &runLength);
+            const bool isReversed = direction == UBIDI_RTL;
+            
+            std::size_t logicalStart = lineStartIndex + runLogicalStart;
+            std::size_t logicalEnd = logicalStart + runLength;
+            if (isReversed) {
+                // Within this reversed section, iterate logically backwards
+                // Each time we see a change in style, render a reversed chunk
+                // of everything since the last change
+                std::size_t styleRunStart = logicalEnd;
+                uint8_t currentStyleIndex = styleIndices.at(styleRunStart - 1);
+                for (std::size_t i = logicalEnd - 1; i >= logicalStart; i--) {
+                    if (currentStyleIndex != styleIndices.at(i) || i == logicalStart) {
+                        std::size_t styleRunEnd = i == logicalStart ? i : i + 1;
+                        std::u16string reversed = writeReverse(inputText, styleRunEnd, styleRunStart);
+                        line.first += reversed;
+                        for (std::size_t j = 0; j < reversed.size(); j++) {
+                            line.second.push_back(currentStyleIndex);
+                        }
+                        currentStyleIndex = styleIndices.at(i);
+                        styleRunStart = styleRunEnd;
+                    }
+                }
+                
+            } else {
+                line.first += input.first.substr(logicalStart, runLength);
+                uint8_t currentStyleIndex = styleIndices.at(logicalStart);
+                for (int32_t i = 0; i < runLength; i++) {
+                    line.second.push_back(currentStyleIndex);
+                }
+            }
+        }
+        
+        lines.push_back(line);
+        lineStartIndex = lineBreakPoint;
+    }
+    
+    return lines;
+}
+    
+std::u16string BiDi::writeReverse(const std::u16string& input, std::size_t logicalStart, std::size_t logicalLength) {
+    UErrorCode errorCode = U_ZERO_ERROR;
+    std::u16string outputText(logicalLength + 1, 0);
+    
+    // UBIDI_DO_MIRRORING: Apply unicode mirroring of characters like parentheses
+    // UBIDI_REMOVE_BIDI_CONTROLS: Now that all the lines are set, remove control characters so that
+    // they don't show up on screen (some fonts have glyphs representing them)
+    ubidi_writeReverse(mbgl::utf16char_cast<const UChar*>(&input[logicalStart]),
+                       logicalLength,
+                       mbgl::utf16char_cast<UChar*>(&outputText[0]),
+                       logicalLength,
+                       UBIDI_DO_MIRRORING | UBIDI_REMOVE_BIDI_CONTROLS,
+                       &errorCode);
+    
+    if (U_FAILURE(errorCode)) {
+        throw std::runtime_error(std::string("BiDi::writeReverse: ") + u_errorName(errorCode));
+    }
+
+    return outputText;
+}
 
 std::u16string BiDi::getLine(std::size_t start, std::size_t end) {
     UErrorCode errorCode = U_ZERO_ERROR;

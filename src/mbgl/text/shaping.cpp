@@ -378,7 +378,15 @@ const Shaping getShaping(const TaggedString& formattedString,
             reorderedLines.emplace_back(line, formattedString.sections[0]);
         }
     } else {
-        // TODO
+        auto processedLines = bidi.processStyledText(std::make_pair(formattedString.text, formattedString.sectionIndex), // TODO unnecessary copy
+                                                     determineLineBreaks(formattedString, spacing, maxWidth, writingMode, glyphs));
+        for (const auto& line : processedLines) {
+            TaggedString taggedLine;
+            taggedLine.text = line.first;
+            taggedLine.sectionIndex = line.second;
+            taggedLine.sections = formattedString.sections;
+            reorderedLines.push_back(taggedLine);
+        }
     }
     
     shapeLines(shaping, reorderedLines, spacing, lineHeight, textAnchor,
