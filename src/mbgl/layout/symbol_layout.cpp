@@ -110,8 +110,12 @@ SymbolLayout::SymbolLayout(const BucketParameters& parameters,
         if (hasText) {
             auto formatted = layout.evaluate<TextField>(zoom, ft);
             auto textTransform = layout.evaluate<TextTransform>(zoom, ft);
+            FontStack baseFontStack = layout.evaluate<TextFont>(zoom, ft);
+            FontStackHash baseFontStackHash = FontStackHasher()(baseFontStack);
+            
             ft.formattedText = TaggedString();
-            for (const auto& section : formatted.sections) {
+            for (std::size_t j = 0; j < formatted.sections.size(); j++) {
+                const auto& section = formatted.sections[j];
                 std::string u8string = section.text;
                 if (textTransform == TextTransformType::Uppercase) {
                     u8string = platform::uppercase(u8string);
@@ -120,26 +124,25 @@ SymbolLayout::SymbolLayout(const BucketParameters& parameters,
                 }
                 
                 ft.formattedText->text += applyArabicShaping(util::utf8_to_utf16::convert(u8string));
-                SectionOptions options;
-                options.scale = section.fontScale;
-                if (section.fontStack) {
-                    options.fontStackHash = FontStackHasher()(*section.fontStack);
-                }
+                ft.formattedText->sections.emplace_back(section.fontScale ? *section.fontScale : 1.0,
+                                                        section.fontStack ? FontStackHasher()(*section.fontStack) : baseFontStackHash);
+                ft.formattedText->sectionIndex.resize(ft.formattedText->text.size(), j);
+
             }
 
 
             const bool canVerticalizeText = layout.get<TextRotationAlignment>() == AlignmentType::Map
                                          && layout.get<SymbolPlacement>() != SymbolPlacementType::Point
                                          && util::i18n::allowsVerticalWritingMode(ft.formattedText->text);
-
-            FontStack fontStack = layout.evaluate<TextFont>(zoom, ft);
-            GlyphIDs& dependencies = glyphDependencies[fontStack];
-
+            
             // Loop through all characters of this text and collect unique codepoints.
-            for (char16_t chr : ft.formattedText->text) {
-                dependencies.insert(chr);
+            for (std::size_t j = 0; j < ft.formattedText->length(); j++) {
+                const auto& sectionFontStack = formatted.sections[ft.formattedText->sectionIndex.at(j)].fontStack;
+                GlyphIDs& dependencies = glyphDependencies[sectionFontStack ? *sectionFontStack : baseFontStack];
+                char16_t codePoint = ft.formattedText->getCharCodeAt(j);
+                dependencies.insert(codePoint);
                 if (canVerticalizeText) {
-                    if (char16_t verticalChr = util::i18n::verticalizePunctuation(chr)) {
+                    if (char16_t verticalChr = util::i18n::verticalizePunctuation(codePoint)) {
                         dependencies.insert(verticalChr);
                     }
                 }
@@ -177,8 +180,6 @@ void SymbolLayout::prepareSymbols(const GlyphMap& glyphMap, const GlyphPositions
     for (auto it = features.begin(); it != features.end(); ++it) {
         auto& feature = *it;
         if (feature.geometry.empty()) continue;
-
-        FontStack fontStack = layout.evaluate<TextFont>(zoom, feature);
 
         std::pair<Shaping, Shaping> shapedTextOrientations;
         optional<PositionedIcon> shapedIcon;
@@ -290,7 +291,8 @@ void SymbolLayout::addFeature(const std::size_t layoutFeatureIndex,
                     layout.evaluate(zoom, feature), layoutTextSize,
                     textBoxScale, textPadding, textPlacement, textOffset,
                     iconBoxScale, iconPadding, iconOffset,
-                                         glyphPositionMap, indexedFeature, layoutFeatureIndex, feature.index, feature.formattedText ? feature.formattedText->text : std::u16string(), overscaling);
+                    glyphPositions, indexedFeature, layoutFeatureIndex, feature.index,
+                    feature.formattedText ? feature.formattedText->text : std::u16string(), overscaling);
         }
     };
     

@@ -46,8 +46,12 @@ public:
 };
     
 struct SectionOptions {
-    optional<double> scale;
-    optional<FontStackHash> fontStackHash;
+    SectionOptions(double scale_, FontStackHash fontStackHash_)
+        : scale(scale_), fontStackHash(fontStackHash_)
+    {}
+    
+    double scale;
+    FontStackHash fontStackHash;
 };
     
 struct TaggedString {
@@ -58,6 +62,32 @@ struct TaggedString {
     , sectionIndex(text.size(), 0) {
         sections.push_back(std::move(options));
     }
+    
+    std::size_t length() const {
+        return text.size();
+    }
+    
+    bool empty() const {
+        return text.empty();
+    }
+    
+    const SectionOptions& getSection(std::size_t index) const {
+        return sections.at(sectionIndex.at(index));
+    }
+    
+    char16_t getCharCodeAt(std::size_t index) const {
+        return text[index];
+    }
+    
+    double getMaxScale() const {
+        double maxScale = 0.0;
+        for (const auto& section : sections) {
+            maxScale = std::max(maxScale, section.scale);
+        }
+        return maxScale;
+    }
+    
+    void trim();
     
     std::u16string text;
     std::vector<uint8_t> sectionIndex;

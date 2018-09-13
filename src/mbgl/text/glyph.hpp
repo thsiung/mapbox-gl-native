@@ -59,16 +59,17 @@ using GlyphMap = std::map<FontStackHash, Glyphs>;
 
 class PositionedGlyph {
 public:
-    explicit PositionedGlyph(GlyphID glyph_, float x_, float y_, bool vertical_)
-        : glyph(glyph_), x(x_), y(y_), vertical(vertical_) {}
+    explicit PositionedGlyph(GlyphID glyph_, float x_, float y_, bool vertical_, FontStackHash font_, double scale_)
+        : glyph(glyph_), x(x_), y(y_), vertical(vertical_), font(font_), scale(scale_)
+    {}
 
     GlyphID glyph = 0;
     float x = 0;
     float y = 0;
     bool vertical = false;
     
-    FonstStackHash font;
-    double scale;
+    FontStackHash font = 0;
+    double scale = 0.0;
 };
 
 enum class WritingModeType : uint8_t;
