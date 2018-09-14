@@ -298,7 +298,8 @@ static optional<std::unique_ptr<Expression>> convertLiteral(type::Type type, con
             if (!result) {
                 return nullopt;
             }
-            return literal(*result);
+            // TODO format: figure out right way to serialize this?
+            return literal(result->toString());
         }
     );
 }
