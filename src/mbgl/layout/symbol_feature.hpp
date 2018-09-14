@@ -2,7 +2,7 @@
 
 #include <mbgl/tile/geometry_tile_data.hpp>
 #include <mbgl/util/optional.hpp>
-#include <mbgl/text/shaping.hpp> // TODO: find right home for TaggedString
+#include <mbgl/text/tagged_string.hpp>
 
 #include <array>
 #include <string>

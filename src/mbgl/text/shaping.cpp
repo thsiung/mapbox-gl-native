@@ -11,17 +11,6 @@
 
 namespace mbgl {
 
-void TaggedString::trim() {
-    boost::algorithm::trim_if(text, boost::algorithm::is_any_of(u" \t\n\v\f\r"));
-}
-
-double TaggedString::getMaxScale() const {
-    double maxScale = 0.0;
-    for (std::size_t i = 0; i < text.length(); i++) {
-        maxScale = std::max(maxScale, getSection(i).scale);
-    }
-    return maxScale;
-}
 struct AnchorAlignment {
     AnchorAlignment(float horizontal_, float vertical_)
         : horizontalAlign(horizontal_), verticalAlign(vertical_) {
@@ -378,21 +367,17 @@ const Shaping getShaping(const TaggedString& formattedString,
     Shaping shaping(translate.x, translate.y, writingMode);
     
     std::vector<TaggedString> reorderedLines;
-    if (formattedString.sections.size() == 1) {
-        auto untaggedLines = bidi.processText(formattedString.text,
+    if (formattedString.sectionCount() == 1) {
+        auto untaggedLines = bidi.processText(formattedString.rawText(),
                                               determineLineBreaks(formattedString, spacing, maxWidth, writingMode, glyphs));
         for (const auto& line : untaggedLines) {
-            reorderedLines.emplace_back(line, formattedString.sections[0]);
+            reorderedLines.emplace_back(line, formattedString.sectionAt(0));
         }
     } else {
-        auto processedLines = bidi.processStyledText(std::make_pair(formattedString.text, formattedString.sectionIndex), // TODO unnecessary copy
+        auto processedLines = bidi.processStyledText(formattedString.getStyledText(),
                                                      determineLineBreaks(formattedString, spacing, maxWidth, writingMode, glyphs));
         for (const auto& line : processedLines) {
-            TaggedString taggedLine;
-            taggedLine.text = line.first;
-            taggedLine.sectionIndex = line.second;
-            taggedLine.sections = formattedString.sections;
-            reorderedLines.push_back(taggedLine);
+            reorderedLines.emplace_back(line, formattedString.getSections());
         }
     }
     

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <mbgl/text/glyph.hpp>
+#include <mbgl/text/tagged_string.hpp>
 #include <mbgl/renderer/image_atlas.hpp>
 #include <mbgl/style/types.hpp>
 
@@ -43,48 +44,6 @@ public:
     float left() const { return _left; }
     float right() const { return _right; }
     float angle() const { return _angle; }
-};
-    
-struct SectionOptions {
-    SectionOptions(double scale_, FontStackHash fontStackHash_)
-        : scale(scale_), fontStackHash(fontStackHash_)
-    {}
-    
-    double scale;
-    FontStackHash fontStackHash;
-};
-    
-struct TaggedString {
-    TaggedString() {}
-    
-    TaggedString(std::u16string text_, SectionOptions options)
-    : text(std::move(text_))
-    , sectionIndex(text.size(), 0) {
-        sections.push_back(std::move(options));
-    }
-    
-    std::size_t length() const {
-        return text.length();
-    }
-    
-    bool empty() const {
-        return text.empty();
-    }
-    
-    const SectionOptions& getSection(std::size_t index) const {
-        return sections.at(sectionIndex.at(index));
-    }
-    
-    char16_t getCharCodeAt(std::size_t index) const {
-        return text[index];
-    }
-    
-    double getMaxScale() const;
-    void trim();
-    
-    std::u16string text;
-    std::vector<uint8_t> sectionIndex;
-    std::vector<SectionOptions> sections;
 };
 
 const Shaping getShaping(const TaggedString& string,

@@ -35,9 +35,9 @@ public:
         : sections(std::move(sections_))
     {}
     
-    bool operator==(const Formatted& ) const {
-        return false; // TODO
-    }
+    bool operator==(const Formatted& ) const;
+    
+    std::string toString() const;
     
     bool empty() const {
         return sections.empty();

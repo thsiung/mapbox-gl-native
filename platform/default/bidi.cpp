@@ -101,8 +101,8 @@ std::vector<std::u16string> BiDi::processText(const std::u16string& input,
     return applyLineBreaking(lineBreakPoints);
 }
     
-std::vector<StyledRun> BiDi::processStyledText(const StyledRun& input, std::set<std::size_t> lineBreakPoints) {
-    std::vector<StyledRun> lines;
+std::vector<StyledText> BiDi::processStyledText(const StyledText& input, std::set<std::size_t> lineBreakPoints) {
+    std::vector<StyledText> lines;
     const auto& inputText = input.first;
     const auto& styleIndices = input.second;
     
@@ -120,7 +120,7 @@ std::vector<StyledRun> BiDi::processStyledText(const StyledRun& input, std::set<
     std::size_t lineStartIndex = 0;
     
     for (std::size_t lineBreakPoint : lineBreakPoints) {
-        StyledRun line;
+        StyledText line;
         line.second.reserve(lineBreakPoint - lineStartIndex);
 
         errorCode = U_ZERO_ERROR;

@@ -257,8 +257,7 @@ private: // Private utilities for converting from mbgl to mgl values
     
     // Formatted
     static NSString *toMGLRawStyleValue(const mbgl::style::expression::Formatted &mbglStopValue) {
-        // TODO yikes?
-        return @(mbglStopValue.sections[0].text.c_str());
+        return @(mbglStopValue.toString().c_str());
     }
 
     // Offsets

@@ -123,21 +123,20 @@ SymbolLayout::SymbolLayout(const BucketParameters& parameters,
                     u8string = platform::lowercase(u8string);
                 }
                 
-                ft.formattedText->text += applyArabicShaping(util::utf8_to_utf16::convert(u8string));
-                ft.formattedText->sections.emplace_back(section.fontScale ? *section.fontScale : 1.0,
-                                                        section.fontStack ? FontStackHasher()(*section.fontStack) : baseFontStackHash);
-                ft.formattedText->sectionIndex.resize(ft.formattedText->text.size(), j);
+                ft.formattedText->addSection(applyArabicShaping(util::utf8_to_utf16::convert(u8string)),
+                                             section.fontScale ? *section.fontScale : 1.0,
+                                             section.fontStack ? FontStackHasher()(*section.fontStack) : baseFontStackHash);
 
             }
 
 
             const bool canVerticalizeText = layout.get<TextRotationAlignment>() == AlignmentType::Map
                                          && layout.get<SymbolPlacement>() != SymbolPlacementType::Point
-                                         && util::i18n::allowsVerticalWritingMode(ft.formattedText->text);
+                                         && util::i18n::allowsVerticalWritingMode(ft.formattedText->rawText());
             
             // Loop through all characters of this text and collect unique codepoints.
             for (std::size_t j = 0; j < ft.formattedText->length(); j++) {
-                const auto& sectionFontStack = formatted.sections[ft.formattedText->sectionIndex.at(j)].fontStack;
+                const auto& sectionFontStack = formatted.sections[ft.formattedText->getSectionIndex(j)].fontStack;
                 GlyphIDs& dependencies = glyphDependencies[sectionFontStack ? *sectionFontStack : baseFontStack];
                 char16_t codePoint = ft.formattedText->getCharCodeAt(j);
                 dependencies.insert(codePoint);
@@ -195,7 +194,7 @@ void SymbolLayout::prepareSymbols(const GlyphMap& glyphMap, const GlyphPositions
                     /* lineHeight: ems */ layout.get<TextLineHeight>() * oneEm,
                     /* anchor */ layout.evaluate<TextAnchor>(zoom, feature),
                     /* justify */ layout.evaluate<TextJustify>(zoom, feature),
-                    /* spacing: ems */ util::i18n::allowsLetterSpacing(feature.formattedText->text) ? layout.evaluate<TextLetterSpacing>(zoom, feature) * oneEm : 0.0f,
+                    /* spacing: ems */ util::i18n::allowsLetterSpacing(feature.formattedText->rawText()) ? layout.evaluate<TextLetterSpacing>(zoom, feature) * oneEm : 0.0f,
                     /* translate */ Point<float>(layout.evaluate<TextOffset>(zoom, feature)[0] * oneEm, layout.evaluate<TextOffset>(zoom, feature)[1] * oneEm),
                     /* verticalHeight */ oneEm,
                     /* writingMode */ writingMode,
@@ -207,8 +206,8 @@ void SymbolLayout::prepareSymbols(const GlyphMap& glyphMap, const GlyphPositions
 
             shapedTextOrientations.first = applyShaping(*feature.formattedText, WritingModeType::Horizontal);
 
-            if (util::i18n::allowsVerticalWritingMode(feature.formattedText->text) && textAlongLine) {
-                feature.formattedText->text = util::i18n::verticalizePunctuation(feature.formattedText->text);
+            if (util::i18n::allowsVerticalWritingMode(feature.formattedText->rawText()) && textAlongLine) {
+                feature.formattedText->verticalizePunctuation();
                 shapedTextOrientations.second = applyShaping(*feature.formattedText, WritingModeType::Vertical);
             }
         }
@@ -292,7 +291,7 @@ void SymbolLayout::addFeature(const std::size_t layoutFeatureIndex,
                     textBoxScale, textPadding, textPlacement, textOffset,
                     iconBoxScale, iconPadding, iconOffset,
                     glyphPositions, indexedFeature, layoutFeatureIndex, feature.index,
-                    feature.formattedText ? feature.formattedText->text : std::u16string(), overscaling);
+                    feature.formattedText ? feature.formattedText->rawText() : std::u16string(), overscaling);
         }
     };
     
@@ -313,7 +312,7 @@ void SymbolLayout::addFeature(const std::size_t layoutFeatureIndex,
                                          overscaling);
 
             for (auto& anchor : anchors) {
-                if (!feature.formattedText || !anchorIsTooClose(feature.formattedText->text, textRepeatDistance, anchor)) {
+                if (!feature.formattedText || !anchorIsTooClose(feature.formattedText->rawText(), textRepeatDistance, anchor)) {
                     addSymbolInstance(line, anchor);
                 }
             }

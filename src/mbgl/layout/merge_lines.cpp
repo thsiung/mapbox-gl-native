@@ -63,8 +63,8 @@ void mergeLines(std::vector<SymbolFeature>& features) {
         
         // TODO: Key should include formatting options (see https://github.com/mapbox/mapbox-gl-js/issues/3645)
 
-        const size_t leftKey = getKey(feature.formattedText->text, geometry[0].front());
-        const size_t rightKey = getKey(feature.formattedText->text, geometry[0].back());
+        const size_t leftKey = getKey(feature.formattedText->rawText(), geometry[0].front());
+        const size_t rightKey = getKey(feature.formattedText->rawText(), geometry[0].back());
 
         const auto left = rightIndex.find(leftKey);
         const auto right = leftIndex.find(rightKey);
@@ -77,7 +77,7 @@ void mergeLines(std::vector<SymbolFeature>& features) {
 
             leftIndex.erase(leftKey);
             rightIndex.erase(rightKey);
-            rightIndex[getKey(feature.formattedText->text, features[i].geometry[0].back())] = i;
+            rightIndex[getKey(feature.formattedText->rawText(), features[i].geometry[0].back())] = i;
 
         } else if (left != rightIndex.end()) {
             // found mergeable line adjacent to the start of the current line, merge

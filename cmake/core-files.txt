@@ -624,6 +624,8 @@ src/mbgl/text/quads.cpp
 src/mbgl/text/quads.hpp
 src/mbgl/text/shaping.cpp
 src/mbgl/text/shaping.hpp
+src/mbgl/text/tagged_string.cpp
+src/mbgl/text/tagged_string.hpp
 
 # tile
 include/mbgl/tile/tile_id.hpp

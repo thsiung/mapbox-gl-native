@@ -14,7 +14,7 @@ class BiDiImpl;
 
 std::u16string applyArabicShaping(const std::u16string&);
 
-using StyledRun = std::pair<std::u16string, std::vector<uint8_t>>;
+using StyledText = std::pair<std::u16string, std::vector<uint8_t>>;
     
 class BiDi : private util::noncopyable {
 public:
@@ -22,7 +22,7 @@ public:
     ~BiDi();
 
     std::vector<std::u16string> processText(const std::u16string&, std::set<std::size_t>);
-    std::vector<StyledRun> processStyledText(const StyledRun&, std::set<std::size_t>);
+    std::vector<StyledText> processStyledText(const StyledText&, std::set<std::size_t>);
 
 private:
     void mergeParagraphLineBreaks(std::set<std::size_t>&);
