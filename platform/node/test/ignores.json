@@ -1,7 +1,5 @@
 {
   "expression-tests/collator/accent-equals-de": "Locale-specific behavior changes based on platform.",
-  "expression-tests/formatted/basic": "skip - https://github.com/mapbox/mapbox-gl-native/pull/12624",
-  "expression-tests/formatted/to-string": "skip - https://github.com/mapbox/mapbox-gl-native/pull/12624",
   "expression-tests/interpolate-hcl/linear": "https://github.com/mapbox/mapbox-gl-native/issues/8720",
   "expression-tests/interpolate-lab/linear": "https://github.com/mapbox/mapbox-gl-native/issues/8720",
   "expression-tests/is-supported-script/default": "This tests RTL text plugin behavior specific to GL JS",
@@ -119,9 +117,6 @@
   "render-tests/symbol-cross-fade/chinese": "https://github.com/mapbox/mapbox-gl-native/issues/10619",
   "render-tests/symbol-placement/line-overscaled": "https://github.com/mapbox/mapbox-gl-js/issues/5654",
   "render-tests/symbol-visibility/visible": "https://github.com/mapbox/mapbox-gl-native/issues/10409",
-  "render-tests/text-field/formatted-arabic": "skip - https://github.com/mapbox/mapbox-gl-native/pull/12624",
-  "render-tests/text-field/formatted-line": "skip - https://github.com/mapbox/mapbox-gl-native/pull/12624",
-  "render-tests/text-field/formatted": "skip - https://github.com/mapbox/mapbox-gl-native/pull/12624",
   "render-tests/text-no-cross-source-collision/default": "skip - gl-js only",
   "render-tests/text-pitch-alignment/auto-text-rotation-alignment-map": "https://github.com/mapbox/mapbox-gl-native/issues/9732",
   "render-tests/text-pitch-alignment/map-text-rotation-alignment-map": "https://github.com/mapbox/mapbox-gl-native/issues/9732",
