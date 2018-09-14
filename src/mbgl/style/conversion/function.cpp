@@ -298,7 +298,7 @@ static optional<std::unique_ptr<Expression>> convertLiteral(type::Type type, con
             if (!result) {
                 return nullopt;
             }
-            return literal(result->sections[0].text);
+            return literal(*result);
         }
     );
 }
