@@ -79,14 +79,7 @@ struct TaggedString {
         return text[index];
     }
     
-    double getMaxScale() const {
-        double maxScale = 0.0;
-        for (const auto& section : sections) {
-            maxScale = std::max(maxScale, section.scale);
-        }
-        return maxScale;
-    }
-    
+    double getMaxScale() const;
     void trim();
     
     std::u16string text;

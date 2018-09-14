@@ -14,7 +14,14 @@ namespace mbgl {
 void TaggedString::trim() {
     boost::algorithm::trim_if(text, boost::algorithm::is_any_of(u" \t\n\v\f\r"));
 }
-    
+
+double TaggedString::getMaxScale() const {
+    double maxScale = 0.0;
+    for (std::size_t i = 0; i < text.length(); i++) {
+        maxScale = std::max(maxScale, getSection(i).scale);
+    }
+    return maxScale;
+}
 struct AnchorAlignment {
     AnchorAlignment(float horizontal_, float vertical_)
         : horizontalAlign(horizontal_), verticalAlign(vertical_) {
