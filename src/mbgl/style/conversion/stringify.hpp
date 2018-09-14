@@ -46,12 +46,6 @@ template <class Writer>
 void stringify(Writer& writer, const std::string& v) {
     writer.String(v);
 }
-    
-template <class Writer>
-void stringify(Writer& writer, const expression::Formatted& v) {
-    // TODO: What should this be?
-    writer.String(v.sections[0].text);
-}
 
 template <class Writer, class T, class Enable = std::enable_if_t<std::is_enum<T>::value>>
 void stringify(Writer& writer, const T& v) {
@@ -135,6 +129,28 @@ template <class Writer>
 void stringify(Writer& writer, const Filter& filter) {
     if (!filter.expression) writer.Null();
     else stringify(writer, (*filter.expression)->serialize());
+}
+    
+    
+template <class Writer>
+void stringify(Writer& writer, const expression::Formatted& v) {
+    // TODO: How is this used, what should it be?
+    writer.StartArray();
+    writer.String("format");
+    for (const auto& section : v.sections) {
+        writer.String(section.text);
+        writer.StartObject();
+        if (section.fontScale) {
+            writer.Key("font-scale");
+            stringify(writer, *section.fontScale);
+        }
+        if (section.fontStack) {
+            writer.Key("text-font");
+            stringify(writer, *section.fontStack);
+        }
+        writer.EndObject();
+    }
+    writer.EndArray();
 }
 
 template <class Writer>
