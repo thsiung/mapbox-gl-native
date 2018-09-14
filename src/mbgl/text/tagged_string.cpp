@@ -20,8 +20,8 @@ void TaggedString::trim() {
         beginningWhitespace++;
     }
     std::size_t trailingWhitespace = styledText.first.length();
-    for (std::size_t i = styledText.first.length() - 1;
-         i >= 0 && i >= beginningWhitespace && whiteSpace(styledText.first.at(i));
+    for (int32_t i = styledText.first.length() - 1;
+         i >= 0 && std::size_t(i) >= beginningWhitespace && whiteSpace(styledText.first.at(i));
          i--) {
         trailingWhitespace--;
     }
