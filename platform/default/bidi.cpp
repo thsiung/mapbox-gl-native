@@ -180,7 +180,7 @@ std::vector<StyledText> BiDi::processStyledText(const StyledText& input, std::se
     
 std::u16string BiDi::writeReverse(const std::u16string& input, std::size_t logicalStart, std::size_t logicalEnd) {
     UErrorCode errorCode = U_ZERO_ERROR;
-    std::size_t logicalLength = logicalEnd - logicalStart;
+    int32_t logicalLength = logicalEnd - logicalStart;
     std::u16string outputText(logicalLength + 1, 0);
     
     // UBIDI_DO_MIRRORING: Apply unicode mirroring of characters like parentheses
