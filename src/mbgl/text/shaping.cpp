@@ -252,7 +252,7 @@ std::set<std::size_t> determineLineBreaks(const TaggedString& logicalInput,
         }
         auto it = glyphs->second.find(codePoint);
         if (it != glyphs->second.end() && it->second && !boost::algorithm::is_any_of(u" \t\n\v\f\r")(codePoint)) {
-            currentX += (*it->second)->metrics.advance + spacing;
+            currentX += (*it->second)->metrics.advance * section.scale + spacing;
         }
         
         // Ideographic characters, spaces, and word-breaking punctuation that often appear without
