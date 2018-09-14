@@ -155,7 +155,7 @@ EvaluationResult FormatExpression::evaluate(const EvaluationContext& params) con
             }
             FontStack fontStack;
             for (const auto& value : textFontResult->get<mapbox::util::recursive_wrapper<std::vector<Value>>>().get()) {
-                // TODO: This can't be the canonical way to do this?
+                // TODO format: is there an easier way to evaluate a fontStack?
                 fontStack.push_back(value.get<std::string>());
             }
             evaluatedTextFont = fontStack;

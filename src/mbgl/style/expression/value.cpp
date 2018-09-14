@@ -1,6 +1,7 @@
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
 #include <mbgl/style/expression/value.hpp>
+#include <mbgl/style/conversion/stringify.hpp>
 
 namespace mbgl {
 namespace style {
@@ -50,9 +51,9 @@ void writeJSON(rapidjson::Writer<rapidjson::StringBuffer>& writer, const Value& 
             // for them so there shouldn't be any way to serialize this value.
             assert(false);
         },
-        [&] (const Formatted&) {
-            // TODO
-            assert(false);
+        [&] (const Formatted& f) {
+            // TODO format: not sure where the stringify logic is supposed to live
+            mbgl::style::conversion::stringify(writer, f);
         },
         [&] (const std::vector<Value>& arr) {
             writer.StartArray();
@@ -133,7 +134,8 @@ mbgl::Value ValueConverter<mbgl::Value>::fromExpressionValue(const Value& value)
             return mbgl::Value();
         },
         [&](const Formatted&)->mbgl::Value {
-           // TODO
+            // fromExpressionValue can't be used for Formatted values,
+            // because they have no meaningful representation as an mbgl::Value
             assert(false);
             return mbgl::Value();
         },

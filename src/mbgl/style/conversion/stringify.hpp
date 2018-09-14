@@ -134,7 +134,7 @@ void stringify(Writer& writer, const Filter& filter) {
     
 template <class Writer>
 void stringify(Writer& writer, const expression::Formatted& v) {
-    // TODO: How is this used, what should it be?
+    // TODO format: How is this used, what should it be?
     writer.StartArray();
     writer.String("format");
     for (const auto& section : v.sections) {
