@@ -181,7 +181,7 @@ ParseResult ParsingContext::parse(const Convertible& value, TypeAnnotationOption
             if (typeAnnotationOption == includeTypeAnnotations) {
                 parsed = { std::make_unique<ArrayAssertion>(expected->get<type::Array>(), std::move(*parsed)) };
             }
-        } else if (*expected == type::Color && (actual == type::Value || actual == type::String)) {
+        } else if ((*expected == type::Color || *expected == type::Formatted) && (actual == type::Value || actual == type::String)) {
             if (typeAnnotationOption == includeTypeAnnotations) {
                 parsed = { std::make_unique<Coercion>(*expected, array(std::move(*parsed))) };
             }
