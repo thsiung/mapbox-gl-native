@@ -64,7 +64,7 @@ struct TaggedString {
     }
     
     std::size_t length() const {
-        return text.size();
+        return text.length();
     }
     
     bool empty() const {
