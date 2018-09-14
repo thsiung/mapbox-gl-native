@@ -265,14 +265,14 @@ std::set<std::size_t> determineLineBreaks(const TaggedString& logicalInput,
 }
 
 void shapeLines(Shaping& shaping,
-                        std::vector<TaggedString>& lines,
-                          const float spacing,
-                          const float lineHeight,
-                          const style::SymbolAnchorType textAnchor,
-                          const style::TextJustifyType textJustify,
-                          const float verticalHeight,
-                          const WritingModeType writingMode,
-                          const GlyphMap& glyphMap) {
+                std::vector<TaggedString>& lines,
+                const float spacing,
+                const float lineHeight,
+                const style::SymbolAnchorType textAnchor,
+                const style::TextJustifyType textJustify,
+                const float verticalHeight,
+                const WritingModeType writingMode,
+                const GlyphMap& glyphMap) {
     
     // the y offset *should* be part of the font metadata
     const int32_t yOffset = -17;

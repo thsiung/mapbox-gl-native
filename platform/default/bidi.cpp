@@ -160,14 +160,14 @@ std::vector<StyledText> BiDi::processStyledText(const StyledText& input, std::se
                         currentStyleIndex = styleIndices.at(i);
                         styleRunStart = styleRunEnd;
                     }
+                    if (i == 0) {
+                        break;
+                    }
                 }
                 
             } else {
                 line.first += input.first.substr(logicalStart, runLength);
-                uint8_t currentStyleIndex = styleIndices.at(logicalStart);
-                for (int32_t i = 0; i < runLength; i++) {
-                    line.second.push_back(currentStyleIndex);
-                }
+                line.second.insert(line.second.end(), styleIndices.begin() + logicalStart, styleIndices.begin() + logicalStart + runLength);
             }
         }
 

@@ -134,9 +134,8 @@ mbgl::Value ValueConverter<mbgl::Value>::fromExpressionValue(const Value& value)
             return mbgl::Value();
         },
         [&](const Formatted&)->mbgl::Value {
-            // fromExpressionValue can't be used for Formatted values,
-            // because they have no meaningful representation as an mbgl::Value
-            assert(false);
+            // TODO format: figure out right way to serialize this?
+            // Seems like it should be similar to the Formatted logic in stringify.hpp, can they be shared?
             return mbgl::Value();
         },
         [&](const std::vector<Value>& values)->mbgl::Value {

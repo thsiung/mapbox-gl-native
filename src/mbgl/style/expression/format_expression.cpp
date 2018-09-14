@@ -137,6 +137,12 @@ EvaluationResult FormatExpression::evaluate(const EvaluationContext& params) con
         if (!textResult) {
             return textResult.error();
         }
+        
+        // TODO format: clearly I don't understand how to use these
+        optional<std::string> evaluatedText = fromExpressionValue<std::string>(*textResult);
+        if (!evaluatedText) {
+            return EvaluationError();
+        }
 
         optional<double> evaluatedFontScale;
         if (section.fontScale) {
@@ -160,7 +166,7 @@ EvaluationResult FormatExpression::evaluate(const EvaluationContext& params) con
             }
             evaluatedTextFont = fontStack;
         }
-        evaluatedSections.emplace_back(textResult->get<std::string>(), evaluatedFontScale, evaluatedTextFont);
+        evaluatedSections.emplace_back(*evaluatedText, evaluatedFontScale, evaluatedTextFont);
     }
     return Formatted(evaluatedSections);
 }
