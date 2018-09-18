@@ -318,7 +318,7 @@ NS_ASSUME_NONNULL_BEGIN
  @param mapView The map view that is tracking the user's location.
  @param anchorPoint the CGPoint used to offset the user location annotation.
  */
-- (void)mapView:(MGLMapView *)mapView userLocationForMapView:(CGPoint)anchorPoint;
+- (void)mapView:(MGLMapView *)mapView userLocationAnchorForMapView:(CGPoint)anchorPoint;
 
 #pragma mark Managing the Appearance of Annotations
 
