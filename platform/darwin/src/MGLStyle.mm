@@ -92,7 +92,7 @@ const MGLExceptionName MGLRedundantSourceIdentifierException = @"MGLRedundantSou
 @property (nonatomic) NSMutableDictionary<NSString *, NSDictionary<NSObject *, MGLTextLanguage *> *> *localizedLayersByIdentifier;
 
 @end
-
+ 
 @implementation MGLStyle
 
 #pragma mark Default style URLs
